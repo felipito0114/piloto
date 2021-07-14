@@ -1,0 +1,84 @@
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+from openpyxl import Workbook
+import tkinter.font as tkFont
+from openpyxl import Workbook
+import gspread
+from oauth2client import client
+from oauth2client.service_account import ServiceAccountCredentials
+import time
+
+#######Conexion a Drive####
+scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("key.json",scope)
+client = gspread.authorize(creds)
+###HOJA1###
+sheet = client.open("piloto").sheet1
+###HOJA 3###
+sheet2 = client.open("piloto").get_worksheet(2)
+data  = sheet.get_all_records()
+
+######funcion para ingresar#####
+def insu():
+    dato = cpedido.get()
+    if dato == "C1" or dato == "C2" or dato == "C3" or dato == "C4" or dato == "C5" or dato == "C6" or dato == "C7" or dato == "C8" or dato == "C9" or dato == "C10"or dato == "C11" or dato == "C12" or dato == "B1" or dato == "B2" or dato == "B3" or dato == "B4" or dato == "B5":
+        busco = sheet2.find(dato)
+        col = sheet2.col_values(1)
+        fila = len(col)
+        fila = fila + 1
+        sheet2.update_cell(fila,busco.col,"1")
+        hoy = time.strftime("%d/%m/%y")
+        sheet2.update_cell(fila,1,hoy)
+        guardar(hoy,dato)
+        messagebox.showinfo(title="Información", message="Pedido Exitoso")
+        borrar()
+    elif dato == "":
+        messagebox.showwarning(title="Advertencia", message="Error, Falta el codigo del insumo")
+    else: 
+        messagebox.showwarning(title="Advertencia", message="Error, Codigo incorrecto")
+
+def cancelar_pedido():
+	respuesta = messagebox.askyesno(title="Pregunta", message="¿Desea cancelar el pedido?")
+	if respuesta:
+		cpedido.delete(0,tk.END)
+
+def guardar(orden,orden2):
+	f = open("insumos.csv","a")
+	f.write(orden+","+str(orden2)+"\n")
+	f.close()	
+
+def borrar():
+	cpedido.delete(0,tk.END)
+
+ventana = tk.Tk()
+ventana.config(width = 400, height = 200)
+ventana.title("Stock Insumos")
+
+
+##### Etiquetas y cajas #########
+ebienvenido = tk.Label(text="------ Pedidos -------")
+ebienvenido.place(x = 140, y = 20)
+epedido = tk.Label(text = "Ingrese codigo de insumo : ")
+epedido.place(x = 30, y = 90)
+cpedido = tk.Entry()
+cpedido.place(x = 190, y = 90)
+ejemplo = tkFont.Font(family="Arial", size=9, weight="bold", slant="italic")
+epedido.configure(font=ejemplo)
+ebienvenido.configure(font = ejemplo)
+
+##### Botones #########
+bpedido = tk.Button(text = "Hacer Pedido" , bg = "DarkSeaGreen1", command = insu)
+bpedido.place(x = 50 , y = 150, height=40, width = 100)
+bpedido.configure(font=ejemplo)
+bcancelar = tk.Button(text = "Cancelar Pedido", bg = "IndianRed1", command = cancelar_pedido)
+bcancelar.place(x = 230 , y = 150, height=40, width = 100)
+bcancelar.configure(font=ejemplo)
+
+"""binfo = tk.Button(text = "Info")
+binfo.place(x = 30 , y = 150, height=40, width = 100)
+binfo.configure(font=ejemplo)
+"""
+
+
+ventana.mainloop()
